@@ -1,0 +1,176 @@
+<html>
+<head>
+<title>hw5.ipynb</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #7a7e85;}
+.s1 { color: #cf8e6d;}
+.s2 { color: #bcbec4;}
+.s3 { color: #bcbec4;}
+.s4 { color: #6aab73;}
+.s5 { color: #2aacb8;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+hw5.ipynb</font>
+</center></td></tr></table>
+<pre><span class="s0">#%% 
+</span><span class="s1">import </span><span class="s2">requests </span><span class="s1">as </span><span class="s2">rq</span>
+<span class="s1">import </span><span class="s2">bs4</span>
+<span class="s1">import </span><span class="s2">pandas </span><span class="s1">as </span><span class="s2">pd</span>
+<span class="s1">import </span><span class="s2">plotly</span><span class="s3">.</span><span class="s2">express </span><span class="s1">as </span><span class="s2">px</span>
+<span class="s1">from </span><span class="s2">io </span><span class="s1">import </span><span class="s2">StringIO</span>
+<span class="s1">import </span><span class="s2">plotly</span><span class="s3">.</span><span class="s2">graph_objects </span><span class="s1">as </span><span class="s2">go</span>
+<span class="s3">%</span><span class="s2">matplotlib inline</span>
+<span class="s0">#%% 
+</span><span class="s2">url </span><span class="s3">= </span><span class="s4">'https://en.wikipedia.org/wiki/List_of_countries_by_GDP_(nominal)'</span>
+<span class="s2">headers </span><span class="s3">= {</span><span class="s4">'User-Agent'</span><span class="s3">: </span><span class="s4">'Mozilla/5.0'</span><span class="s3">}</span>
+<span class="s2">page </span><span class="s3">= </span><span class="s2">rq</span><span class="s3">.</span><span class="s2">get</span><span class="s3">(</span><span class="s2">url</span><span class="s3">, </span><span class="s2">headers</span><span class="s3">=</span><span class="s2">headers</span><span class="s3">)</span>
+<span class="s0">#%% 
+</span><span class="s2">bs4page </span><span class="s3">= </span><span class="s2">bs4</span><span class="s3">.</span><span class="s2">BeautifulSoup</span><span class="s3">(</span><span class="s2">page</span><span class="s3">.</span><span class="s2">text</span><span class="s3">, </span><span class="s4">'html.parser'</span><span class="s3">)</span>
+<span class="s2">tables </span><span class="s3">= </span><span class="s2">bs4page</span><span class="s3">.</span><span class="s2">find_all</span><span class="s3">(</span><span class="s4">'table'</span><span class="s3">, {</span><span class="s4">'class'</span><span class="s3">: </span><span class="s4">'wikitable'</span><span class="s3">})</span>
+<span class="s0">#%% 
+</span><span class="s2">table_string </span><span class="s3">= </span><span class="s2">str</span><span class="s3">(</span><span class="s2">tables</span><span class="s3">[</span><span class="s5">0</span><span class="s3">])</span>
+<span class="s2">dat_1 </span><span class="s3">= </span><span class="s2">pd</span><span class="s3">.</span><span class="s2">read_html</span><span class="s3">(</span><span class="s2">StringIO</span><span class="s3">(</span><span class="s2">table_string</span><span class="s3">))[</span><span class="s5">0</span><span class="s3">]</span>
+<span class="s2">dat_1</span>
+
+<span class="s0">#%% 
+# Fill in the missing data with predictions from the UN and Worldbank</span>
+<span class="s2">na_counts </span><span class="s3">= </span><span class="s2">dat_1</span><span class="s3">.</span><span class="s2">isna</span><span class="s3">().</span><span class="s2">sum</span><span class="s3">()</span>
+<span class="s2">print</span><span class="s3">(</span><span class="s2">na_counts</span><span class="s3">)</span>
+<span class="s2">dat_1</span><span class="s3">[</span><span class="s4">'IMF (2026)[6]'</span><span class="s3">] = </span><span class="s2">dat_1</span><span class="s3">[</span><span class="s4">'IMF (2026)[6]'</span><span class="s3">].</span><span class="s2">fillna</span><span class="s3">(</span><span class="s2">dat_1</span><span class="s3">[</span><span class="s4">'World Bank (2024)[7]'</span><span class="s3">])</span>
+<span class="s2">na_counts </span><span class="s3">= </span><span class="s2">dat_1</span><span class="s3">.</span><span class="s2">isna</span><span class="s3">().</span><span class="s2">sum</span><span class="s3">()</span>
+<span class="s2">print</span><span class="s3">(</span><span class="s2">na_counts</span><span class="s3">)</span>
+<span class="s0">#%% 
+#The region data can be found from an older table here</span>
+<span class="s2">url </span><span class="s3">= </span><span class="s4">'https://en.wikipedia.org/w/index.php?title=List_of_countries_by_GDP_(nominal)&amp;oldid=1187446467'</span>
+<span class="s2">headers </span><span class="s3">= {</span><span class="s4">'User-Agent'</span><span class="s3">: </span><span class="s4">'Mozilla/5.0'</span><span class="s3">}</span>
+<span class="s2">page </span><span class="s3">= </span><span class="s2">rq</span><span class="s3">.</span><span class="s2">get</span><span class="s3">(</span><span class="s2">url</span><span class="s3">, </span><span class="s2">headers</span><span class="s3">=</span><span class="s2">headers</span><span class="s3">)</span>
+
+<span class="s2">bs4page </span><span class="s3">= </span><span class="s2">bs4</span><span class="s3">.</span><span class="s2">BeautifulSoup</span><span class="s3">(</span><span class="s2">page</span><span class="s3">.</span><span class="s2">text</span><span class="s3">, </span><span class="s4">'html.parser'</span><span class="s3">)</span>
+<span class="s2">tables </span><span class="s3">= </span><span class="s2">bs4page</span><span class="s3">.</span><span class="s2">find_all</span><span class="s3">(</span><span class="s4">'table'</span><span class="s3">)</span>
+<span class="s2">print</span><span class="s3">(</span><span class="s4">f&quot;Number of tables found: </span><span class="s1">{</span><span class="s2">len</span><span class="s3">(</span><span class="s2">tables</span><span class="s3">)</span><span class="s1">}</span><span class="s4">&quot;</span><span class="s3">)</span>
+
+
+<span class="s2">table_string </span><span class="s3">= </span><span class="s2">str</span><span class="s3">(</span><span class="s2">tables</span><span class="s3">[</span><span class="s5">2</span><span class="s3">])</span>
+<span class="s2">dat_2 </span><span class="s3">= </span><span class="s2">pd</span><span class="s3">.</span><span class="s2">read_html</span><span class="s3">(</span><span class="s2">StringIO</span><span class="s3">(</span><span class="s2">table_string</span><span class="s3">))[</span><span class="s5">0</span><span class="s3">]</span>
+<span class="s2">dat_2</span>
+<span class="s0">#%% 
+#Align Tables</span>
+<span class="s2">print</span><span class="s3">(</span><span class="s2">dat_1</span><span class="s3">.</span><span class="s2">columns</span><span class="s3">)</span>
+<span class="s2">print</span><span class="s3">(</span><span class="s2">dat_2</span><span class="s3">.</span><span class="s2">columns</span><span class="s3">)</span>
+<span class="s2">dat_2</span><span class="s3">.</span><span class="s2">columns </span><span class="s3">= </span><span class="s2">dat_2</span><span class="s3">.</span><span class="s2">columns</span><span class="s3">.</span><span class="s2">map</span><span class="s3">(</span><span class="s1">lambda </span><span class="s2">x</span><span class="s3">: </span><span class="s2">x</span><span class="s3">[</span><span class="s5">0</span><span class="s3">] </span><span class="s1">if </span><span class="s2">isinstance</span><span class="s3">(</span><span class="s2">x</span><span class="s3">, </span><span class="s2">tuple</span><span class="s3">) </span><span class="s1">else </span><span class="s2">x</span><span class="s3">)</span>
+
+<span class="s0"># Merge to include the 'UN region' into dat_1</span>
+<span class="s2">merged_df </span><span class="s3">= </span><span class="s2">pd</span><span class="s3">.</span><span class="s2">merge</span><span class="s3">(</span>
+    <span class="s2">dat_1</span><span class="s3">, </span><span class="s2">dat_2</span><span class="s3">[[</span><span class="s4">'Country/Territory'</span><span class="s3">, </span><span class="s4">'UN region'</span><span class="s3">]], </span><span class="s2">on</span><span class="s3">=</span><span class="s4">'Country/Territory'</span><span class="s3">, </span><span class="s2">how</span><span class="s3">=</span><span class="s4">'left'</span><span class="s3">)</span>
+
+<span class="s0"># Drop the row with index 0</span>
+<span class="s2">merged_df </span><span class="s3">= </span><span class="s2">merged_df</span><span class="s3">.</span><span class="s2">drop</span><span class="s3">(</span><span class="s2">index</span><span class="s3">=</span><span class="s5">0</span><span class="s3">).</span><span class="s2">reset_index</span><span class="s3">(</span><span class="s2">drop</span><span class="s3">=</span><span class="s1">True</span><span class="s3">)</span>
+
+<span class="s2">merged_df</span>
+<span class="s0">#%% 
+</span>
+<span class="s0"># Now we will group by 'UN region' and aggregate the IMF values</span>
+<span class="s0"># Now create the stacked bar plot</span>
+<span class="s2">fig </span><span class="s3">= </span><span class="s2">px</span><span class="s3">.</span><span class="s2">bar</span><span class="s3">(</span>
+    <span class="s2">merged_df</span><span class="s3">,</span>
+    <span class="s2">x</span><span class="s3">=</span><span class="s4">'UN region'</span><span class="s3">,                             </span><span class="s0"># Use regions as x-axis</span>
+    <span class="s2">y</span><span class="s3">=</span><span class="s4">'IMF (2026)[6]'</span><span class="s3">,                        </span><span class="s0"># IMF numbers on y-axis</span>
+    <span class="s2">color</span><span class="s3">=</span><span class="s4">'Country/Territory'</span><span class="s3">,                </span><span class="s0"># Stack by countries</span>
+    <span class="s2">title</span><span class="s3">=</span><span class="s4">'IMF Numbers by Region'</span><span class="s3">,            </span><span class="s0"># Title of the plot</span>
+<span class="s3">)</span>
+
+<span class="s0"># Update layout for better readability</span>
+<span class="s2">fig</span><span class="s3">.</span><span class="s2">update_layout</span><span class="s3">(</span><span class="s2">barmode</span><span class="s3">=</span><span class="s4">'stack'</span><span class="s3">, </span><span class="s2">yaxis_title</span><span class="s3">=</span><span class="s4">'IMF Values'</span><span class="s3">, </span><span class="s2">xaxis_title</span><span class="s3">=</span><span class="s4">'Regions'</span><span class="s3">)</span>
+<span class="s2">fig</span><span class="s3">.</span><span class="s2">update_layout</span><span class="s3">(</span><span class="s2">showlegend</span><span class="s3">=</span><span class="s1">False</span><span class="s3">)</span>
+
+<span class="s0"># Show the plot</span>
+<span class="s2">fig</span><span class="s3">.</span><span class="s2">show</span><span class="s3">()</span>
+<span class="s0">#%% 
+## Look at the chapter on interactive graphicsLinks to an external site. and, specifically, the code to display a subject's MRICloud data as a sunburst plot.</span>
+<span class="s0">## load in the hierarchy information</span>
+<span class="s2">url </span><span class="s3">= </span><span class="s4">&quot;https://raw.githubusercontent.com/bcaffo/MRIcloudT1volumetrics/master/inst/extdata/multilevel_lookup_table.txt&quot;</span>
+<span class="s2">multilevel_lookup </span><span class="s3">= </span><span class="s2">pd</span><span class="s3">.</span><span class="s2">read_csv</span><span class="s3">(</span><span class="s2">url</span><span class="s3">, </span><span class="s2">sep </span><span class="s3">= </span><span class="s4">&quot;</span><span class="s1">\t</span><span class="s4">&quot;</span><span class="s3">).</span><span class="s2">drop</span><span class="s3">([</span><span class="s4">'Level5'</span><span class="s3">], </span><span class="s2">axis </span><span class="s3">= </span><span class="s5">1</span><span class="s3">)</span>
+<span class="s2">multilevel_lookup </span><span class="s3">= </span><span class="s2">multilevel_lookup</span><span class="s3">.</span><span class="s2">rename</span><span class="s3">(</span><span class="s2">columns </span><span class="s3">= {</span>
+    <span class="s4">&quot;modify&quot;   </span><span class="s3">: </span><span class="s4">&quot;roi&quot;</span><span class="s3">,</span>
+    <span class="s4">&quot;modify.1&quot; </span><span class="s3">: </span><span class="s4">&quot;level4&quot;</span><span class="s3">,</span>
+    <span class="s4">&quot;modify.2&quot; </span><span class="s3">: </span><span class="s4">&quot;level3&quot;</span><span class="s3">,</span>
+    <span class="s4">&quot;modify.3&quot; </span><span class="s3">: </span><span class="s4">&quot;level2&quot;</span><span class="s3">,</span>
+    <span class="s4">&quot;modify.4&quot; </span><span class="s3">: </span><span class="s4">&quot;level1&quot;</span><span class="s3">})</span>
+<span class="s2">multilevel_lookup </span><span class="s3">= </span><span class="s2">multilevel_lookup</span><span class="s3">[[</span><span class="s4">'roi'</span><span class="s3">, </span><span class="s4">'level4'</span><span class="s3">, </span><span class="s4">'level3'</span><span class="s3">, </span><span class="s4">'level2'</span><span class="s3">, </span><span class="s4">'level1'</span><span class="s3">]]</span>
+<span class="s2">multilevel_lookup</span><span class="s3">.</span><span class="s2">head</span><span class="s3">()</span>
+
+<span class="s0">## Now load in the subject data</span>
+<span class="s2">id </span><span class="s3">= </span><span class="s5">127</span>
+<span class="s2">subjectData </span><span class="s3">= </span><span class="s2">pd</span><span class="s3">.</span><span class="s2">read_csv</span><span class="s3">(</span><span class="s4">&quot;https://raw.githubusercontent.com/smart-stats/ds4bio_book/main/book/assetts/kirby21AllLevels.csv&quot;</span><span class="s3">)</span>
+<span class="s2">subjectData </span><span class="s3">= </span><span class="s2">subjectData</span><span class="s3">.</span><span class="s2">loc</span><span class="s3">[(</span><span class="s2">subjectData</span><span class="s3">.</span><span class="s2">type </span><span class="s3">== </span><span class="s5">1</span><span class="s3">) &amp; (</span><span class="s2">subjectData</span><span class="s3">.</span><span class="s2">level </span><span class="s3">== </span><span class="s5">5</span><span class="s3">) &amp; (</span><span class="s2">subjectData</span><span class="s3">.</span><span class="s2">id </span><span class="s3">== </span><span class="s2">id</span><span class="s3">)]</span>
+<span class="s2">subjectData </span><span class="s3">= </span><span class="s2">subjectData</span><span class="s3">[[</span><span class="s4">'roi'</span><span class="s3">, </span><span class="s4">'volume'</span><span class="s3">]]</span>
+<span class="s0">## Merge the subject data with the multilevel data</span>
+<span class="s2">subjectData </span><span class="s3">= </span><span class="s2">pd</span><span class="s3">.</span><span class="s2">merge</span><span class="s3">(</span><span class="s2">subjectData</span><span class="s3">, </span><span class="s2">multilevel_lookup</span><span class="s3">, </span><span class="s2">on </span><span class="s3">= </span><span class="s4">&quot;roi&quot;</span><span class="s3">)</span>
+<span class="s2">subjectData </span><span class="s3">= </span><span class="s2">subjectData</span><span class="s3">.</span><span class="s2">assign</span><span class="s3">(</span><span class="s2">icv </span><span class="s3">= </span><span class="s4">&quot;ICV&quot;</span><span class="s3">)</span>
+<span class="s2">subjectData </span><span class="s3">= </span><span class="s2">subjectData</span><span class="s3">.</span><span class="s2">assign</span><span class="s3">(</span><span class="s2">comp </span><span class="s3">= </span><span class="s2">subjectData</span><span class="s3">.</span><span class="s2">volume </span><span class="s3">/ </span><span class="s2">np</span><span class="s3">.</span><span class="s2">sum</span><span class="s3">(</span><span class="s2">subjectData</span><span class="s3">.</span><span class="s2">volume</span><span class="s3">))</span>
+<span class="s2">subjectData</span><span class="s3">.</span><span class="s2">head</span><span class="s3">()</span>
+
+<span class="s2">fig </span><span class="s3">= </span><span class="s2">px</span><span class="s3">.</span><span class="s2">sunburst</span><span class="s3">(</span><span class="s2">subjectData</span><span class="s3">, </span><span class="s2">path</span><span class="s3">=[</span><span class="s4">'icv'</span><span class="s3">, </span><span class="s4">'level1'</span><span class="s3">, </span><span class="s4">'level2'</span><span class="s3">, </span><span class="s4">'level3'</span><span class="s3">, </span><span class="s4">'level4'</span><span class="s3">, </span><span class="s4">'roi'</span><span class="s3">],</span>
+                  <span class="s2">values</span><span class="s3">=</span><span class="s4">'comp'</span><span class="s3">, </span><span class="s2">width</span><span class="s3">=</span><span class="s5">800</span><span class="s3">, </span><span class="s2">height</span><span class="s3">=</span><span class="s5">800</span><span class="s3">)</span>
+<span class="s2">fig</span><span class="s3">.</span><span class="s2">show</span><span class="s3">()</span>
+<span class="s0">#%% 
+# Add Intracranial Volume (ICV)</span>
+<span class="s2">subjectData </span><span class="s3">= </span><span class="s2">subjectData</span><span class="s3">.</span><span class="s2">assign</span><span class="s3">(</span><span class="s2">icv</span><span class="s3">=</span><span class="s2">np</span><span class="s3">.</span><span class="s2">sum</span><span class="s3">(</span><span class="s2">subjectData</span><span class="s3">[</span><span class="s4">'volume'</span><span class="s3">]))</span>
+
+<span class="s0"># Prepare data for Sankey diagram</span>
+<span class="s0"># Create labels for the Sankey diagram</span>
+<span class="s2">labels </span><span class="s3">= </span><span class="s2">subjectData</span><span class="s3">[[</span><span class="s4">'level1'</span><span class="s3">, </span><span class="s4">'level2'</span><span class="s3">, </span><span class="s4">'level3'</span><span class="s3">, </span><span class="s4">'level4'</span><span class="s3">, </span><span class="s4">'roi'</span><span class="s3">]].</span><span class="s2">values</span><span class="s3">.</span><span class="s2">flatten</span><span class="s3">().</span><span class="s2">tolist</span><span class="s3">() + [</span><span class="s4">&quot;ICV&quot;</span><span class="s3">]</span>
+<span class="s2">labels </span><span class="s3">= </span><span class="s2">list</span><span class="s3">(</span><span class="s2">set</span><span class="s3">(</span><span class="s2">labels</span><span class="s3">))  </span><span class="s0"># Get unique labels</span>
+
+<span class="s0"># Generate source and target indices for the Sankey diagram</span>
+<span class="s2">sources </span><span class="s3">= []</span>
+<span class="s2">targets </span><span class="s3">= []</span>
+<span class="s2">values </span><span class="s3">= []</span>
+
+<span class="s0"># Building the Sankey connections by levels</span>
+<span class="s1">for </span><span class="s2">index</span><span class="s3">, </span><span class="s2">row </span><span class="s1">in </span><span class="s2">subjectData</span><span class="s3">.</span><span class="s2">iterrows</span><span class="s3">():</span>
+    <span class="s0"># ICV to level 1</span>
+    <span class="s2">sources</span><span class="s3">.</span><span class="s2">append</span><span class="s3">(</span><span class="s2">labels</span><span class="s3">.</span><span class="s2">index</span><span class="s3">(</span><span class="s4">&quot;ICV&quot;</span><span class="s3">))</span>
+    <span class="s2">targets</span><span class="s3">.</span><span class="s2">append</span><span class="s3">(</span><span class="s2">labels</span><span class="s3">.</span><span class="s2">index</span><span class="s3">(</span><span class="s2">row</span><span class="s3">[</span><span class="s4">'level1'</span><span class="s3">]))</span>
+    <span class="s2">values</span><span class="s3">.</span><span class="s2">append</span><span class="s3">(</span><span class="s2">row</span><span class="s3">[</span><span class="s4">'volume'</span><span class="s3">])</span>
+    
+    <span class="s0"># Level 1 to Level 2</span>
+    <span class="s2">sources</span><span class="s3">.</span><span class="s2">append</span><span class="s3">(</span><span class="s2">labels</span><span class="s3">.</span><span class="s2">index</span><span class="s3">(</span><span class="s2">row</span><span class="s3">[</span><span class="s4">'level1'</span><span class="s3">]))</span>
+    <span class="s2">targets</span><span class="s3">.</span><span class="s2">append</span><span class="s3">(</span><span class="s2">labels</span><span class="s3">.</span><span class="s2">index</span><span class="s3">(</span><span class="s2">row</span><span class="s3">[</span><span class="s4">'level2'</span><span class="s3">]))</span>
+    <span class="s2">values</span><span class="s3">.</span><span class="s2">append</span><span class="s3">(</span><span class="s2">row</span><span class="s3">[</span><span class="s4">'volume'</span><span class="s3">])</span>
+    
+    <span class="s0"># Level 2 to Level 3</span>
+    <span class="s2">sources</span><span class="s3">.</span><span class="s2">append</span><span class="s3">(</span><span class="s2">labels</span><span class="s3">.</span><span class="s2">index</span><span class="s3">(</span><span class="s2">row</span><span class="s3">[</span><span class="s4">'level2'</span><span class="s3">]))</span>
+    <span class="s2">targets</span><span class="s3">.</span><span class="s2">append</span><span class="s3">(</span><span class="s2">labels</span><span class="s3">.</span><span class="s2">index</span><span class="s3">(</span><span class="s2">row</span><span class="s3">[</span><span class="s4">'level3'</span><span class="s3">]))</span>
+    <span class="s2">values</span><span class="s3">.</span><span class="s2">append</span><span class="s3">(</span><span class="s2">row</span><span class="s3">[</span><span class="s4">'volume'</span><span class="s3">])</span>
+    
+
+<span class="s0"># Create the Sankey diagram</span>
+<span class="s2">fig </span><span class="s3">= </span><span class="s2">go</span><span class="s3">.</span><span class="s2">Figure</span><span class="s3">(</span><span class="s2">go</span><span class="s3">.</span><span class="s2">Sankey</span><span class="s3">(</span>
+    <span class="s2">node</span><span class="s3">=</span><span class="s2">dict</span><span class="s3">(</span>
+        <span class="s2">pad</span><span class="s3">=</span><span class="s5">15</span><span class="s3">,</span>
+        <span class="s2">thickness</span><span class="s3">=</span><span class="s5">20</span><span class="s3">,</span>
+        <span class="s2">line</span><span class="s3">=</span><span class="s2">dict</span><span class="s3">(</span><span class="s2">color</span><span class="s3">=</span><span class="s4">&quot;black&quot;</span><span class="s3">, </span><span class="s2">width</span><span class="s3">=</span><span class="s5">0.5</span><span class="s3">),</span>
+        <span class="s2">label</span><span class="s3">=</span><span class="s2">labels</span><span class="s3">,</span>
+        <span class="s2">color</span><span class="s3">=</span><span class="s4">&quot;blue&quot;</span>
+    <span class="s3">),</span>
+    <span class="s2">link</span><span class="s3">=</span><span class="s2">dict</span><span class="s3">(</span>
+        <span class="s2">source</span><span class="s3">=</span><span class="s2">sources</span><span class="s3">,  </span><span class="s0"># Indices corresponding to labels</span>
+        <span class="s2">target</span><span class="s3">=</span><span class="s2">targets</span><span class="s3">,  </span><span class="s0"># Indices corresponding to labels</span>
+        <span class="s2">value</span><span class="s3">=</span><span class="s2">values     </span><span class="s0"># Values corresponding to each link</span>
+    <span class="s3">)</span>
+<span class="s3">))</span>
+
+<span class="s2">fig</span><span class="s3">.</span><span class="s2">update_layout</span><span class="s3">(</span><span class="s2">title_text</span><span class="s3">=</span><span class="s4">&quot;Sankey Diagram for Subject's ICV Data&quot;</span><span class="s3">, </span><span class="s2">font_size</span><span class="s3">=</span><span class="s5">10</span><span class="s3">)</span>
+<span class="s2">fig</span><span class="s3">.</span><span class="s2">show</span><span class="s3">()</span>
+<span class="s0">#%% md 
+</span><span class="s2">Put the link to your live web page in a markdown cell of your hw5.ipynb file as a text block. 
+</span><span class="s0">#%% md 
+</span></pre>
+</body>
+</html>
